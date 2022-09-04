@@ -1,0 +1,75 @@
+=> import file into the mongodb on ec2 and docker 
+--------------------------------------------------
+ls -1 *.json | while read jsonfile; do mongoimport -d dgaas_stats_data -c object_collection_stats --file $jsonfile --jsonArray --type    json;done 
+
+ ls -1 152.json | while read jsonfile; do mongoimport -h 3.143.232.241 --port 8081 -d dgaas_stats_data -c object_collection_stats -u "mongo_admin" -p "mongoAdmin#1234" --authenticationDatabase "admin" --file $jsonfile --jsonArray --type json; done
+
+ ls -1 1.json | while read jsonfile; do mongoimport -h 3.143.232.241 --port 27017 -d dgaas_stats_data -c object_collection_stats -u "dgaas_mongo_user" -p "dgaasDevMongo#1234" --authenticationDatabase "admin" --file $jsonfile --jsonArray --type json; done
+
+ls -1 *.json | while read jsonfile; do mongoimport -h 3.143.232.241 --port 27017 -d dgaas_stats_data_20M -c datasources_collection_stats -u "dgaas_mongo_user" -p "dgaasDevMongo#1234" --authenticationDatabase "admin" --file $jsonfile --jsonArray --type json; done
+
+ls -1 *.json | while read jsonfile; do mongoimport -h 18.190.107.84 --port 27017 -d dgaas_stats_data_20M -c object_collection_stats -u "dgaas_mongo_user" -p "dgaasDevMongo#1234" --authenticationDatabase "admin" --file $jsonfile --jsonArray --type json; done
+
+
+
+mongo -h 3.143.232.241  -u mongo_admin  -p mongoAdmin#1234
+
+=> connect to ec2 using ip address
+------------------------------------
+ ssh -i "/home/mukesh/Downloads/DGAAS_RHEL_7.pem" ec2-user@ec2-18-190-107-84.us-east-2.compute.amazonaws.com
+
+//18.190.107.84
+
+=> copy file from ec2 to docker in particular container
+--------------------------------------------------------
+ docker cp file.txt container-name:/path/to/copy/file.txt
+
+  docker cp /home/ec2-user/july_dataSource/dataSourceMain.json dc21e0d6285f:/july_dataSource
+
+
+
+=> copy  folder from ec2 to docker 
+------------------------------------------------------------
+ docker cp /home/ec2-user/20M_data/file1/. 5a8378b0df57:/mogo_files
+
+ docker cp /home/ec2-user/20M_July_Data/file1/.  2725ff6d2c22:/file/file1
+
+
+
+=> mongo uri to connect to mongodb using terminal
+--------------------------------------------------------
+ mongo mongodb://mongo_admin:mongoAdmin#1234@18.190.107.84:27017
+
+
+=> copy all the file from local machine to ec2 
+-----------------------------------------------------
+ scp -i /home/mukesh/Downloads/DGAAS_RHEL_7.pem /home/mukesh/Documents/mukesh/prosperateTask/actual_file/file1.zip ec2-user@ec2-3-143-232-241.us-east-2.compute.amazonaws.com:/home/ec2-user/new20M_data
+
+scp -i /home/mukesh/Downloads/DGAAS_RHEL_7.pem /home/mukesh/Documents/mukesh/prosperateTask/actual_file/file1.zip ec2-user@ec2-3-143-232-241.us-east-2.compute.amazonaws.com:/home/ec2-user/new20M_data
+
+scp -i /home/mukesh/Downloads/DGAAS_RHEL_7.pem /home/mukesh/collection_mongo/daily_stats.json ec2-user@ec2-18-190-107-84.us-east-2.compute.amazonaws.com:/home/ec2-user/collection_mongo
+
+=> credential fro mongo container 
+------------------------------------
+ password = dgaasDevMongo#1234
+ username = dgaas_mongo_user
+
+
+// mongodb container to docker
+----------------------------------------
+mongoexport --db dgaas_stats_data --collection user_adv_groups -u "dgaas_mongo_user" -p "dgaasDevMongo#1234" --authenticationDatabase=admin --type=json --out /collection_mongo/user_adv_groups.json
+
+
+// docker to ec2 to upload
+-----------------------------------------------
+sudo docker cp 15c5d0640550:/collection_mongo/user_adv_groups.json /home/ec2-user/collection_mongo
+
+
+
+// copy document from ec2 instance to local machine	
+----------------------------------------------------------
+scp -i /home/mukesh/Downloads/DGAAS_RHEL_7.pem ec2-user@ec2-18-190-107-84.us-east-2.compute.amazonaws.com:/home/ec2-user/collection_mongo/daily_stats.json /home/mukesh/collectoion_ec2
+
+mongoimport -h 3.143.232.241 --port 27017 -d dgaas_stats_data_20M -c datasources_collection_stats -u "dgaas_mongo_user" -p "dgaasDevMongo#1234" --authenticationDatabase "admin" --file 
+
+mongoimport -h 18.190.107.84 --port 27017 -d dgaas_stats_data_20M -c remediation_scheduler -u "dgaas_mongo_user" -p "dgaasDevMongo#1234" --authenticationDatabase "admin" --file /collection_mongo/remediation_scheduler.json

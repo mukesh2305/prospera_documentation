@@ -1,0 +1,39 @@
+=> connect to ec2 using ip address
+------------------------------------
+ ssh -i "/home/mukesh/Downloads/DGAAS_RHEL_7.pem" ec2-user@ec2-18-190-107-84.us-east-2.compute.amazonaws.com
+
+
+=> import multiple file from folder into mongodb collection
+-----------------------------------------------------------
+ls -1 *.json | while read jsonfile; do mongoimport -h 18.190.107.84 --port 27017 -d dgaas_stats_data_20M -c object_collection_stats -u "dgaas_mongo_user" -p "dgaasDevMongo#1234" --authenticationDatabase "admin" --file $jsonfile --jsonArray --type json; done
+
+
+=> import single file into mongodb collection
+--------------------------------------------
+mongoimport -h 18.190.107.84 --port 27017 -d dgaas_stats_data_20M -c remediation_scheduler -u "dgaas_mongo_user" -p "dgaasDevMongo#1234" --authenticationDatabase "admin" --file /collection_mongo/remediation_scheduler.json
+
+=> copy file from ec2 to docker in particular container
+--------------------------------------------------------
+ syntax : docker cp file.txt container-name:/path/to/copy/file.txt
+
+ docker cp /home/ec2-user/july_dataSource/dataSourceMain.json dc21e0d6285f:/july_dataSource
+
+
+=> copy all the file from local machine to ec2 
+-----------------------------------------------------
+scp -i /home/mukesh/Downloads/DGAAS_RHEL_7.pem /home/mukesh/collection_mongo/daily_stats.json ec2-user@ec2-18-190-107-84.us-east-2.compute.amazonaws.com:/home/ec2-user/collection_mongo
+
+
+=> mongodb container to docker
+----------------------------------------
+mongoexport --db dgaas_stats_data --collection user_adv_groups -u "dgaas_mongo_user" -p "dgaasDevMongo#1234" --authenticationDatabase=admin --type=json --out /collection_mongo/user_adv_groups.json
+
+
+=> docker to ec2 to upload
+-----------------------------------------------
+sudo docker cp 15c5d0640550:/collection_mongo/user_adv_groups.json /home/ec2-user/collection_mongo
+
+
+=> copy document from ec2 instance to local machine	
+----------------------------------------------------------
+scp -i /home/mukesh/Downloads/DGAAS_RHEL_7.pem ec2-user@ec2-18-190-107-84.us-east-2.compute.amazonaws.com:/home/ec2-user/collection_mongo/daily_stats.json /home/mukesh/collectoion_ec2

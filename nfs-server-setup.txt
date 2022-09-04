@@ -1,0 +1,74 @@
+                                   ///////////// Install and Configure an NFS Server on Ubuntu 18.04 //////////
+Step 1: Install NFS Kernel Server in Ubuntu
+-------------------------------------------
+command : 
+        sudo apt update
+        sudo apt install nfs-kernel-server
+
+
+Step 2: Create an NFS Export Directory
+--------------------------------------
+=> Run the command below by specifying the NFS mount directory name.
+command : sudo mkdir -p /nfs_share
+
+=> Since we want all the client machines to access the shared directory, remove any restrictions in the directory permissions.
+command : sudo chown -R nobody:nogroup /nfs_share/
+
+=> tweak the file permissions to your preference. Here’s  given the read, write and execute privileges to all the contents inside directory.
+command : sudo chmod 777 /nfs_share/
+
+
+Step 3: Grant NFS Share Access to Client Systems
+------------------------------------------------
+=> Permissions for accessing the NFS server are defined in the /etc/exports file. So open the file using any text editor:
+command : sudo vim /etc/exports
+
+write in the file : /mnt/nfs_share  192.168.29.203(rw,sync,no_subtree_check)
+----------------
+rw - stands for Read/write
+sync - Requires changes to be written to the disk before they are applied.
+No_subtree_check : Eliminates subtree checking.
+
+
+step 4: Step 4: Export the NFS Share Directory
+-----------------------------------------------
+command : 
+	sudo exportfs -a
+        sudo systemctl restart nfs-kernel-server
+
+Step 5: Allow NFS Access through the Firewall
+---------------------------------------------
+command : 
+	sudo ufw allow from 192.168.29.203 to any port nfs
+	sudo ufw enable
+	sudo ufw status
+
+step 6 : Install the NFS-Common Package
+---------------------------------------
+command : 
+	sudo apt update
+	sudo apt install nfs-common
+
+step 7 : Create an NFS Mount Point on Client
+--------------------------------------------
+command : sudo mkdir -p /mnt/nfs_clientshare
+
+Step 8: Mount NFS Share on Client System
+----------------------------------------
+=> Let’s check the NFS Server’s IP address using the ifconfig command.
+command :
+	ip a
+	sudo mount 192.168.29.203:/nfs_share  /mnt/nfs_clientshare
+
+Step 9: Testing the NFS Share on Client System
+----------------------------------------------
+=> To verify that our NFS setup is working, we are going to create a few files in the NFS share directory located in the server.
+command : 
+	cd /mnt/nfs_share/
+	touch file1.txt file2.txt file3.txt
+=> Now head back to the NFS client system and check if the files exist.
+command : ls -l /mnt/nfs_clientshare/
+
+Step 10 : now do test connection in UI
+--------------------------------------
+=> fist change your machine_password field(apply your system passsword) from cred.js in remedationapp

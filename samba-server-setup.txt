@@ -1,0 +1,112 @@
+Step 1: Install Samba in Linux
+------------------------------
+command : 
+	sudo apt install samba samba-common samba-client
+
+
+Step 2: Create and Configure Samba Shares
+-----------------------------------------
+command : 
+	sudo mkdir /share-data
+	sudo chown -R  nobody:nobody /share-data
+
+=> Next, we are going to make some configurations in the smb.conf configuration file which is Samba’s main configuration file. But before we do so, we will back up the file by renaming it with a different file extension.
+command :
+	sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bak
+
+=> Next, we are going to create a new configuration file.
+command : 
+	sudo vim /etc/samba/smb.conf
+
+smb.conf file 
+-------------
+[global]
+workgroup = WORKGROUP
+server string = Samba Server %v
+netbios name = rocky-8
+security = user
+map to guest = bad user
+dns proxy = no
+ntlm auth = true
+
+
+
+[Public]
+path =  /share-data
+browsable =yes
+writable = yes
+guest ok = yes
+
+
+=> To verify the configurations made, run the command:
+command : sudo testparm
+
+
+=> Next, start and enable Samba daemons as shown.
+command : 
+	sudo systemctl start smb
+	sudo systemctl enable smb
+	sudo systemctl start nmb
+	sudo systemctl enable nmb
+
+=> Be sure to confirm that both the smb and nmb daemons are running.
+command : 
+	sudo systemctl status smb
+	sudo systemctl status nmb
+
+
+=> Currently, our directory is empty as we have not created any files. So, we will head back to our terminal and create a few files in the samba share directory.
+
+command : 
+	cd /srv/tecmint/data
+	sudo touch file{1..3}.txt
+
+Step 3: Secure Samba Share Directory
+------------------------------------
+=> First, we will create a new samba user.
+command : 
+	sudo useradd smbuser
+
+=> Next, we will configure a password for the samba user. This is the password that will be used during authentication.
+command : 
+	sudo smbpasswd -a smbuser
+
+=> Next, we will create a new group for our secure samba share and add the new samba user.
+command : 
+	sudo groupadd smb_group
+	sudo usermod -g smb_group smbuser
+
+=> Thereafter, create yet another samba share which will be securely accessed. In our case, we have created another directory in the same path as the
+
+command : 
+	sudo mkdir -p  /private
+
+=> Then configure the file permissions for the samba share
+command : 
+	sudo chmod -R 770 /private
+	sudo chown -R root:smb_group /private
+
+=> Once again, access the Samba configuration file.
+command : 
+	sudo vim /etc/samba/smb.conf
+
+=> Add these lines to define to secure samba share in smb.conf
+[Private]
+path = /srv/tecmint/private
+valid users = @smb_group
+guest ok = no
+writable = no
+browsable = yes
+
+=> Finally, restart all the samba daemons as shown.
+command : 
+	sudo systemctl restart smb
+	sudo systemctl restart nmb
+
+Step 4: Accessing Samba Share from Linux Client
+-----------------------------------------------
+command :
+	smbclient //192.168.29.203/Private -U smbuser%smbuser
+
+step 5:now do test connection in UI
+-----------------------------------

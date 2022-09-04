@@ -1,0 +1,112 @@
+1 ==> create new database in the mysql :
+    name of database is "dd_ticket_manager_OMC_Latest";
+                         -----------------------------
+2 ==> goto github and clone the repo in the OMC_Latest folder :
+   command : git clone https://github.com/jaydengregit/dgaas.git 
+             ---------------------------------------------------
+3 ==> after cloning the repo into the machine change the branch to "dgaas_2.1_latest_omnicom"
+  command : git checkout dgaas_2.1_latest_omnicom
+            -------------------------------------
+4 ==> after that go into the dgaas_client and dgaas_server install npm packages
+  command : npm install 
+	    ------------
+5 ==> search in the project file name dd_ticket_manager.sql, after that copy all the data from the that file and select database and run that 	data in to the mysql.
+  command : use dd_ticket_manager_OMC_Latest; // for selecting the database.
+ -> after selecting run data into the mysql sytem.
+
+6 ==> after doing this process some table are missing from the database so we have to install externally.
+  -> list of table with schema is below that we wanted to run in the "dgaas_2.1_latest_omnicom" database.
+   1 : -> remediation_server
+         ------------------
+   CREATE TABLE remediation_server (
+	  id int NOT NULL AUTO_INCREMENT,
+	  host_url varchar(255) NOT NULL,
+	  port varchar(45) DEFAULT NULL,
+	  protocol varchar(45) NOT NULL,
+	  dra_name varchar(45) NOT NULL,
+	  gui_id varchar(100) DEFAULT NULL,
+	  isDefault tinyint NOT NULL DEFAULT '0',
+	  PRIMARY KEY (`id`),
+	  UNIQUE KEY dra_name_UNIQUE (`dra_name`),
+	  UNIQUE KEY gui_id (`gui_id`)
+  ) ;
+
+  2 : -> powerbi_auth 
+        -------------
+	CREATE TABLE powerbi_auth (
+	  id int NOT NULL AUTO_INCREMENT,
+	  powerBiTenantId longtext NOT NULL,
+	  powerBiAppId longtext NOT NULL,
+	  powerBiAppSecret longtext NOT NULL,
+	  adminWorkspaceId longtext NOT NULL,
+	  adminReportId longtext NOT NULL,
+	  PRIMARY KEY (`id`)
+	); 
+
+ 3 : -> daily_stats
+	-----------
+	CREATE TABLE daily_stats (
+	  id int NOT NULL AUTO_INCREMENT,
+	  cron varchar(45) NOT NULL,
+	  enable tinyint DEFAULT NULL,
+	  PRIMARY KEY (`id`)
+	);
+
+ 4 : -> datasource_collection_scheduler
+    -------------------------------
+	CREATE TABLE datasource_collection_scheduler (
+	  id int NOT NULL AUTO_INCREMENT,
+	  cron varchar(45) NOT NULL,
+	  time_unit varchar(45) NOT NULL DEFAULT 'DAILY',
+	  enable tinyint NOT NULL,
+	  PRIMARY KEY (`id`)
+	);
+
+ 5 : -> weekly_stats
+    -------------
+	CREATE TABLE weekly_stats (
+	  id int NOT NULL AUTO_INCREMENT,
+	  cron varchar(45) NOT NULL,
+	  enable tinyint DEFAULT NULL,
+	  sday varchar(45) NOT NULL,
+	  PRIMARY KEY (`id`)
+	);
+
+ 6: -> object_collection_schedular
+   ---------------------------
+	CREATE TABLE object_collection_schedular (
+	  id int NOT NULL AUTO_INCREMENT,
+	  time_unit varchar(45) NOT NULL DEFAULT 'DAILY',
+	  cron varchar(45) NOT NULL,
+	  enable tinyint DEFAULT NULL,
+	  status varchar(45) NOT NULL DEFAULT 'IDLE',
+	  schedulerInProcessFlag tinyint NOT NULL DEFAULT '0',
+	  object_sync_flag tinyint NOT NULL DEFAULT '0',
+	  pii_merge_flag tinyint NOT NULL DEFAULT '0',
+	  violation_merge_flag tinyint NOT NULL DEFAULT '0',
+	  PRIMARY KEY (`id`)
+	);
+  - run all the 6 table schema in the "dd_ticket_manager_OMC_Latest" database.
+
+7 ==> after that go to db_config.json file and change database filed to "dd_ticket_manager_OMC_Latest"
+    database : "dd_ticket_manager_OMC_Latest"
+   ---------------------------------------------
+
+8 => after that go to mongo_db.js file and change one line in the connectMongoClient() function.
+    chage mdb = db.db("dgaas_stats_data"); to => mdb = db.db("dgaas_stats_data_OMC_Latest");
+   -> this how we chage the database name.
+
+9 => after that goto config.json file in the smartsheet_config_file folder copy that path .
+    -> after that goto file smartsheetConfigs.js file and paste that copy path into the ss_config_file filed.
+                                                                                        --------------
+   // this is how we have pasted path of config.json file
+   -> ss_config_file : "C:/DGaaS Project Setup/OMC_Latest/dgaas/smartsheet_config_file/config.json"
+
+10 => after that goto file manager and goto location of dgaas_server and run below command to start server
+   command : npm run server
+            ---------------
+
+11 => after that goto file manager and goto location of dgaas_client and run below command to start client
+   command : npm start
+             ---------
+13 => 
